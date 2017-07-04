@@ -1,20 +1,23 @@
 @echo off
-setlocal ENABLEDELAYEDEXPANSION
 
-rem 一時ファイル名
-set tmpoutput="tmpoutput.txt"
+call :SEARCHFILE %1
+goto :END
 
-rem ドラッグドロップしたディレクトリ内のファイル（サブディレクトリも含む）を順番に処理
-rem サブディレクトリを含みたくない場合/sを消す
-for /f %%a in ('dir /b /s %1\*.txt') do (
-	type nul>tmpoutput
-	for /f %%b in (%%a) do (
-		set line=%%b
-		set "tmp1=!line:(=!"
-		set "tmp2=!tmp1:)=!"
-		echo !tmp2!>>tmpoutput
+:SEARCHFILE
+	set objectdir=%1
+	for /f  "delims="   %%a in ('dir /a-d /b /s %objectdir%') do (
+		echo %%a
+		call :RENAMEFILE "%%a"
 	)
-	rm %%a
-	mv tmpoutput %%a
-)
-endlocal
+	exit /B 
+
+
+:RENAMEFILE
+	set originalfilename=%1
+	set tmp1=%originalfilename:(=%
+	set convertedfilename=%tmp1:)=%
+	if not %originalfilename% == %convertedfilename% move %originalfilename% %convertedfilename%
+	exit /B 
+
+:END
+
